@@ -95,16 +95,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             // 画像設定
             ImageView img = (ImageView)view.findViewById(R.id.info_image);
-            img.setImageResource(R.drawable.skytree);
 
             //マーカータグの取得
             Integer clickCount = (Integer)marker.getTag();
 
             //タグによる画像の表示場合分け
             if (clickCount == 1) {
-                img.setImageResource(R.drawable.skytree);
+                img.setImageResource(R.drawable.photo1);
             }else{
-                img.setImageResource(R.drawable.kouen);
+                img.setImageResource(R.drawable.photo2);
             }
 
             return view;
