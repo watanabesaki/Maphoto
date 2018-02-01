@@ -1,5 +1,6 @@
 package com.example.nttr.map3;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -50,14 +51,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 new LatLng(35.710063, 139.8107), 15);
 
         //マップタイプの設定
-        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
 
         //マーカー作成
         makeMarker();
-
-
         //マップ更新
         mMap.moveCamera(cUpdate);
+
+        //長押しのリスナーをセット
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                LatLng newlocation = new LatLng(latLng.latitude,latLng.longitude);
+                mMap.addMarker(new MarkerOptions().position(newlocation).title(""+latLng.latitude+" :"+ latLng.longitude));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newlocation, 14));
+            }
+        });
 
 
     }
@@ -122,7 +131,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         
     }
 
+    public void click(View view){
+        //画面遷移のクラスはIntent
+        //IntentはAndroid内でActivity同士やアプリ間の通信を行う
+        Intent intent = new Intent(this,PhotoActivity.class);
 
+        //startActivityでIntentの内容を発行する
+        startActivity(intent);
+
+    }
+
+//    //ローカル ビジネスなどの端末の現在地を見つけるには、PlaceDetectionApi.getCurrentPlace()を呼び出す
+//    PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(mMap,null);
+//
+//    //PlacePickerの表示
+//    int PLACE_PICKER_REQUEST = 1;
+//    PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+//    MapsActivity(builder.build(this),PLACE_PICKER_REQUEST);
+//
+//    //ユーザーが選択したプレイスを取得する
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (requestCode == PLACE_PICKER_REQUEST) {
+//            if (resultCode == RESULT_OK) {
+//                Place place = PlacePicker.getPlace(data, this);
+//                String toastMsg = String.format("Place: %s", place.getName());
+//                Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
+//            }
+//        }
+//    }
+//
+//    private AutocompleteFilter autocompleteFilter;
+//    private LatLngBounds bounds;
+//    PendingResult<AutocompletePredictionBuffer> result =
+//            Places.GeoDataApi.getAutocompletePredictions(mMap, query, bounds, autocompleteFilter);
+//
+//
+//
 
 
 

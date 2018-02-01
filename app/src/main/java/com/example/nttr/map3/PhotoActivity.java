@@ -114,5 +114,9 @@ public class PhotoActivity extends AppCompatActivity {
         mImageswitcher.setImageResource(mImageResources[mPosition]);
     }
 
+    public void click(View view){
+        finish();
+    }
+
 
 }
