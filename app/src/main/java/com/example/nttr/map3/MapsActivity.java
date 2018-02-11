@@ -3,7 +3,6 @@ package com.example.nttr.map3;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -27,7 +26,7 @@ import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.InputStream;
+import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -36,6 +35,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //緯度経度変数
     private double latitude;
     private double longtitude;
+    //URIの変数
+    String open_file_URI;
+    //選択した場所
+    LatLng newlocation;
+
+    //配列の作成(大きさを決めない配列)
+    ArrayList<Double> latList = new ArrayList<Double>();
+    ArrayList<Double> lngList = new ArrayList<Double>();
+    ArrayList<String> uriList = new ArrayList<String>();
 
     //マーカー変数名
     private Marker oneMarker;
@@ -47,9 +55,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //ボタンの定義
     Button create;
 
-    //URIの変数
-    String open_file_URI;
-
     //写真
     private ImageView mOpenImage;
     private Bitmap mBitmap;
@@ -58,26 +63,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //storeage定義
     private StorageReference mStorageRef;
     //realtimedatebase
-    private DatabaseReference mDatabase;
+    private FirebaseDatabase database;
 
     //firebaseのデータ
     @IgnoreExtraProperties
-    public class mapphoto{
+    public class Mapphoto{
 
         public double lat;
         public double lng;
         public String uri;
         //public int tag;
 
-        //コンストラクタ
+        //デフォルトコンストラクタ
+        public Mapphoto(){
 
-        public mapphoto(double lat,double lng, String uri) {
+        }
+
+        //コンストラクタ
+        public Mapphoto(double lat,double lng, String uri) {
             this.lat = lat;
             this.lng = lng;
             this.uri = uri;
             //this.tag = tag;
         }
 
+        //getter
+        public double getLat() {
+            return lat;
+        }
+
+        public double getLng() {
+            return lng;
+        }
+
+        public String getUri() {
+            return uri;
+        }
     }
 
 
@@ -96,7 +117,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //firebase入れる
         mStorageRef = FirebaseStorage.getInstance().getReference();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        database = FirebaseDatabase.getInstance();
 
 
 
@@ -157,6 +178,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
+                //緯度経度取得、マーカー作成、カメラ移動
+                newlocation = new LatLng(latLng.latitude,latLng.longitude);
+                mMap.addMarker(new MarkerOptions().position(newlocation).title(""+latLng.latitude+" :"+ latLng.longitude));
+
+                //緯度経度の代入
+                latitude = latLng.latitude;
+                longtitude = latLng.longitude;
+                //Log.d("lat", String.valueOf(latitude));
+
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newlocation, 14));
+
                 //ピッカーにより画像を取得する
                 //ピッカーを使用してファイルを選択するためのIntent
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -166,36 +198,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 intent.setType("*/*");
                 startActivityForResult(intent,OPEN_DOCUMENT_REQUEST);
 
-                //緯度経度取得、マーカー作成、カメラ移動
-                LatLng newlocation = new LatLng(latLng.latitude,latLng.longitude);
-                mMap.addMarker(new MarkerOptions().position(newlocation).title(""+latLng.latitude+" :"+ latLng.longitude));
+                //firebaseへ緯度経度URIの書き込み
+                writeNewPlace(latitude,longtitude,open_file_URI);
 
-                //緯度経度の代入
-                latitude = latLng.latitude;
-                longtitude = latLng.longitude;
-
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newlocation, 14));
-
-//                //Firebaseテキストの保存
-//                FirebaseDatabase database = FirebaseDatabase.getInstance();
-//                DatabaseReference myRef = database.getReference("message");
-//
-//                myRef.setValue("Hello, World!");
+                //地図の再表示
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newlocation, 15));
 
             }
         });
 
 
     }
-
-    private void writeNewPlace(double lat,double lng,String uri){
-        mapphoto maphoto = new mapphoto(latitude,longtitude,open_file_URI);
-
-        mDatabase.setValue(maphoto);
-        Log.d("message", "firebase保存成功");
-
-    }
-
 
 
     //ピッカーから画像を選択すると、onActivityResult() が呼び出される.
@@ -216,23 +229,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Uriをstringに変換
                     open_file_URI = open_file.toString();
 
-                    //writeNewPlace(latitude,longtitude,open_file_URI);
 
-
-                    BitmapFactory.Options mOptions = new BitmapFactory.Options();
-                    mOptions.inSampleSize = 10;
-                    InputStream is;
-                    try {
-                        is = getContentResolver().openInputStream(open_file);
-                        // mBitmap は Bitmap 型として定義したインスタンス変数
-                        mBitmap = BitmapFactory.decodeStream(is);
-                        is.close();
-                        // mOpenImage は Bitmap を表示させるための ImageView のインスタンス
-                        mOpenImage.setImageBitmap(mBitmap);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
+//                    BitmapFactory.Options mOptions = new BitmapFactory.Options();
+//                    mOptions.inSampleSize = 10;
+//                    InputStream is;
+//                    try {
+//                        is = getContentResolver().openInputStream(open_file);
+//                        // mBitmap は Bitmap 型として定義したインスタンス変数
+//                        mBitmap = BitmapFactory.decodeStream(is);
+//                        is.close();
+//                        // mOpenImage は Bitmap を表示させるための ImageView のインスタンス
+//                        mOpenImage.setImageBitmap(mBitmap);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                    break;
 
                 default :
                     break;
@@ -240,6 +251,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+
+//    private void writeNewPlace(Mapphoto mapphoto){
+//
+//        mapphoto = new Mapphoto(latitude,longtitude,open_file_URI);
+//
+//        DatabaseReference mDatabase = database.getReference("photo");
+//        mDatabase.setValue(mapphoto);
+//        Log.d("message", "firebase保存成功");
+//
+//    }
+
+    //firebaseに保存するメソッド
+    private void writeNewPlace(double lat,double lng, String uri){
+
+        //mapphoto = new Mapphoto(latitude,longtitude,open_file_URI);
+
+        //配列に追加
+        latList.add(latitude);
+        lngList.add(longtitude);
+        uriList.add(open_file_URI);
+
+
+        DatabaseReference mDatabaselat = database.getReference("lat");
+        mDatabaselat.setValue(latList);
+        Log.d("message", "firebaselat保存成功");
+
+        DatabaseReference mDatabaselng = database.getReference("lng");
+        mDatabaselng.setValue(lngList);
+        Log.d("message", "firebaselng保存成功");
+
+        DatabaseReference mDatabaseuri = database.getReference("uri");
+        mDatabaseuri.setValue(uriList);
+        Log.d("message", "firebaseuri保存成功");
+
+
+    }
 
     //マーカーの追加
     public void makeMarker(){
