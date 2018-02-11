@@ -26,8 +26,6 @@ import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.util.ArrayList;
-
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     //マップ名
@@ -40,10 +38,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //選択した場所
     LatLng newlocation;
 
-    //配列の作成(大きさを決めない配列)
-    ArrayList<Double> latList = new ArrayList<Double>();
-    ArrayList<Double> lngList = new ArrayList<Double>();
-    ArrayList<String> uriList = new ArrayList<String>();
+//    //配列の作成(大きさを決めない配列)
+//    ArrayList<Double> latList = new ArrayList<Double>();
+//    ArrayList<Double> lngList = new ArrayList<Double>();
+//    ArrayList<String> uriList = new ArrayList<String>();
 
     //マーカー変数名
     private Marker oneMarker;
@@ -204,6 +202,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //地図の再表示
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newlocation, 15));
 
+
+
+
             }
         });
 
@@ -267,24 +268,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //mapphoto = new Mapphoto(latitude,longtitude,open_file_URI);
 
-        //配列に追加
-        latList.add(latitude);
-        lngList.add(longtitude);
-        uriList.add(open_file_URI);
+//        //配列に追加
+//        latList.add(latitude);
+//        lngList.add(longtitude);
+//        uriList.add(open_file_URI);
+//
+//        Log.d("latList", String.valueOf(latList));
 
-
-        DatabaseReference mDatabaselat = database.getReference("lat");
-        mDatabaselat.setValue(latList);
+        DatabaseReference mDatabase = database.getReference("photo01");
+        mDatabase.child("lat").push().setValue(latitude);
         Log.d("message", "firebaselat保存成功");
 
-        DatabaseReference mDatabaselng = database.getReference("lng");
-        mDatabaselng.setValue(lngList);
+        mDatabase.child("lng").push().setValue(longtitude);
         Log.d("message", "firebaselng保存成功");
 
-        DatabaseReference mDatabaseuri = database.getReference("uri");
-        mDatabaseuri.setValue(uriList);
+        mDatabase.child("uri").push().setValue(open_file_URI);
         Log.d("message", "firebaseuri保存成功");
-
 
     }
 
@@ -301,9 +300,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .position(new LatLng(35.6994253, 139.8171457))
                 .title("20180119"));
         twoMarker.setTag(2);
-
-
-
 
 
         //情報windowの設定
