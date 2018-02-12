@@ -20,9 +20,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -137,6 +140,82 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
+//        DatabaseReference mDatabase =database.getReference();
+//        mDatabase.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                String value = (String) dataSnapshot.getValue();
+//                Log.d("firebasetag",String.valueOf(value));
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                Log.w("firebasetag", "loadPost:onCancelled", databaseError.toException());
+//            }
+//        });
+
+        //value イベントのリッスンしてデータを読み取り
+        ValueEventListener postListener =new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Mapphoto mapphoto = dataSnapshot.getValue(Mapphoto.class);
+                Log.d("firebasetag",String.valueOf(mapphoto));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w("firebasetag", "loadPost:onCancelled", databaseError.toException());
+            }
+        };
+        DatabaseReference mDatabase =database.getReference();
+        mDatabase.addValueEventListener(postListener);
+
+
+
+//        //配列のようなデータ構造に要素が追加されるごとに呼び出される
+//        DatabaseReference mDatabase = database.getReference();
+//        mDatabase.addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//
+//                Mapphoto mapphoto = dataSnapshot.getValue(Mapphoto.class);
+//                Log.d("firebasetag",String.valueOf(mapphoto));
+//
+//                Double lat = mapphoto.lat;
+//                Double lng = mapphoto.lng;
+//                String uri = mapphoto.uri;
+//                Log.d("Firebase",String.valueOf(lat));
+//                Log.d("Firebase",String.valueOf(lng));
+//                Log.d("Firebase",String.valueOf(uri));
+//
+//
+//
+//            }
+//
+//            @Override
+//            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//
+//            }
+//
+//            @Override
+//            public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+
     }
 
 
@@ -199,11 +278,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //firebaseへ緯度経度URIの書き込み
                 writeNewPlace(latitude,longtitude,open_file_URI);
 
-                //地図の再表示
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newlocation, 15));
-
-
-
 
             }
         });
@@ -211,6 +285,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//        //配列のようなデータ構造に要素が追加されるごとに呼び出される
+//        DatabaseReference mDatabase = database.getReference("https://map3-5c909.firebaseio.com/");
+//        mDatabase.addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//
+//                Mapphoto mapphoto = dataSnapshot.getValue(Mapphoto.class);
+//                Double lat = mapphoto.lat;
+//                Double lng = mapphoto.lng;
+//                String uri = mapphoto.uri;
+//                Log.d("Firebase",String.valueOf(lat));
+//                Log.d("Firebase",String.valueOf(lng));
+//                Log.d("Firebase",String.valueOf(uri));
+//
+//
+//
+//            }
+//
+//            @Override
+//            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//
+//            }
+//
+//            @Override
+//            public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+//
+//
+//
+//    }
 
     //ピッカーから画像を選択すると、onActivityResult() が呼び出される.
     // 選択した画像を指す URI が resultData パラメータに含まれ返ってきます。それを getData() を使って抽出
@@ -286,6 +405,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.d("message", "firebaseuri保存成功");
 
     }
+
+
+
 
     //マーカーの追加
     public void makeMarker(){
