@@ -34,12 +34,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //マップ名
     private GoogleMap mMap;
     //緯度経度変数
-    private double latitude;
-    private double longtitude;
+    static double latitude;
+    static double longtitude;
     //URIの変数
     String open_file_URI;
     //選択した場所
     LatLng newlocation;
+
+
+    int testD = 1;
 
 //    //配列の作成(大きさを決めない配列)
 //    ArrayList<Double> latList = new ArrayList<Double>();
@@ -67,8 +70,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseDatabase database;
 
     //firebaseのデータ
+
     @IgnoreExtraProperties
-    public class Mapphoto{
+    public static class Mapphoto {
 
         public double lat;
         public double lng;
@@ -100,6 +104,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public String getUri() {
             return uri;
         }
+
     }
 
 
@@ -253,6 +258,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //長押しのリスナーをセット
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+
             @Override
             public void onMapLongClick(LatLng latLng) {
                 //緯度経度取得、マーカー作成、カメラ移動
@@ -262,8 +268,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //緯度経度の代入
                 latitude = latLng.latitude;
                 longtitude = latLng.longitude;
-                //Log.d("lat", String.valueOf(latitude));
 
+                testD++;
+
+                Log.d("lat1", String.valueOf(latitude));
+                Log.d("lat1", String.valueOf(longtitude));
+                Log.d("lat1", String.valueOf(open_file_URI));
+                Log.d("lat1", String.valueOf(testD));
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newlocation, 14));
 
                 //ピッカーにより画像を取得する
@@ -275,8 +286,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 intent.setType("*/*");
                 startActivityForResult(intent,OPEN_DOCUMENT_REQUEST);
 
-                //firebaseへ緯度経度URIの書き込み
-                writeNewPlace(latitude,longtitude,open_file_URI);
 
 
             }
@@ -348,6 +357,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     //Uriをstringに変換
                     open_file_URI = open_file.toString();
+                    //Log.d("uri", String.valueOf(open_file_URI));
+
+                    Log.d("lat2", String.valueOf(latitude));
+                    Log.d("lat2", String.valueOf(longtitude));
+                    Log.d("lat2", String.valueOf(open_file_URI));
+
+                    Log.d("lat2", String.valueOf(testD));
+
+                    //firebaseへ緯度経度URIの書き込み
+                    writeNewPlace(latitude,longtitude,open_file_URI);
 
 
 //                    BitmapFactory.Options mOptions = new BitmapFactory.Options();
@@ -392,16 +411,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        lngList.add(longtitude);
 //        uriList.add(open_file_URI);
 //
-//        Log.d("latList", String.valueOf(latList));
+//        Log.d("latList", String.valueOf(latList));]
+
 
         DatabaseReference mDatabase = database.getReference("photo01");
-        mDatabase.child("lat").push().setValue(latitude);
+        Log.d("lat3", String.valueOf(latitude));
+        Log.d("lat3", String.valueOf(longtitude));
+        Log.d("lat3", String.valueOf(open_file_URI));
+        Log.d("lat3", String.valueOf(testD));
+
+        mDatabase.child("01").push().setValue(latitude);
         Log.d("message", "firebaselat保存成功");
 
-        mDatabase.child("lng").push().setValue(longtitude);
+        mDatabase.child("01").push().setValue(longtitude);
         Log.d("message", "firebaselng保存成功");
 
-        mDatabase.child("uri").push().setValue(open_file_URI);
+        mDatabase.child("01").push().setValue(open_file_URI);
         Log.d("message", "firebaseuri保存成功");
 
     }
